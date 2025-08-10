@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crazeclic kazino</title>
+<style>
+body{background:#0b0b0e;color:#fff;font-family:Arial,Helvetica,sans-serif;text-align:center;padding:18px}
+.header{color:gold;font-size:24px;margin-bottom:8px}
+.balance{font-size:18px;margin:12px 0}
+.btn{display:block;margin:10px auto;padding:12px 16px;background:#1f1f25;border:2px solid #6b3f00;border-radius:10px;color:#fff;width:80%;max-width:360px;font-size:16px}
+.result{margin-top:14px;font-size:16px;min-height:36px}
+.anim{font-size:26px;margin-top:8px}
+.footer{font-size:12px;color:#888;margin-top:18px}
+input,button{font-size:16px}
+</style>
+</head>
+<body>
+<div class="header">🎰 Crazeclic kazino</div>
+<div>Баланс: <span id="balance">...</span> 🎂</div>
+<div style="margin:8px 0">
+<input id="uid" placeholder="Вставь свой Telegram ID" style="padding:8px;width:70%;max-width:280px">
+<button id="load" class="btn" onclick="loadBalance()">Загрузить баланс</button>
+</div>
+<button class="btn" onclick="play('dice')">🎲 Кости</button>
+<button class="btn" onclick="play('darts')">🎯 Дартс</button>
+<button class="btn" onclick="play('football')">⚽ Футбол</button>
+<button class="btn" onclick="play('basket')">🏀 Баскетбол</button>
+<button class="btn" onclick="play('slots')">🎰 Слоты</button>
+<div class="anim" id="anim"></div>
+<div class="result" id="result"></div>
+<div class="footer">Чтобы синхронизировать с ботом — укажи свой Telegram ID выше.</div>
+<script>
+let balanceEl=document.getElementById('balance'),resultEl=document.getElementById('result'),animEl=document.getElementById('anim');
+async function loadBalance(){resultEl.innerText='';animEl.innerText='';let uid=document.getElementById('uid').value.trim();if(!uid){alert('Вставь свой Telegram ID в поле');return;}try{let r=await fetch('/get_balance?user_id='+encodeURIComponent(uid));let j=await r.json();if(j.ok){balanceEl.innerText=j.cakes;}else{alert('Ошибка: '+(j.error||'unknown'));}}catch(e){alert('Ошибка запроса');console.error(e);}}
+async function play(game){resultEl.innerText='';animEl.innerText='...';let uid=document.getElementById('uid').value.trim();if(!uid){alert('Вставь свой Telegram ID');return;}animEl.innerText='Игровая анимация...';await new Promise(r=>setTimeout(r,1800));let win=false,msg='';let v=Math.floor(Math.random()*6)+1;if(game==='dice'){win=v>=4;msg='Выпало '+v}if(game==='darts'){win=v===6;msg='Выпало '+v}if(game==='football'){win=v===3;msg='Выпало '+v}if(game==='basket'){win=(v===4||v===5);msg='Выпало '+v}if(game==='slots'){win=(v>4);msg='Символы'}let delta=win?2:-1;try{let r=await fetch('/update_balance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid,delta:delta})});let j=await r.json();if(j.ok){balanceEl.innerText=j.cakes;resultEl.innerText=(win?'🏆 Победа!':'💀 Проигрыш!')+' '+msg;}else{alert('Ошибка: '+(j.error||'unknown'));}}catch(e){alert('Ошибка запроса');console.error(e);}finally{animEl.innerText='';}}
+</script>
+</body>
+</html>
